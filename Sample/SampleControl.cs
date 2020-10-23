@@ -1,43 +1,50 @@
-﻿using SharpDX;
-using SharpDX.Direct2D1;
+﻿using SharpDX.Direct2D1;
 using SharpDX.Mathematics.Interop;
 using System;
 
-namespace Sample {
-    class SampleControl : D2dControl.D2dControl {
+namespace Sample
+{
+    internal class SampleControl : D2dControl.D2dControl
+    {
+        private float _x;
+        private float _y;
+        private const float W = 10;
+        private const float H = 10;
+        private float _dx = 1;
+        private float _dy = 1;
 
-        private float x = 0;
-        private float y = 0;
-        private float w = 10;
-        private float h = 10;
-        private float dx = 1;
-        private float dy = 1;
+        private readonly Random _rnd = new Random();
 
-        private Random rnd = new Random();
-
-        public SampleControl() {
-            resCache.Add( "RedBrush"  , t => new SolidColorBrush( t, new RawColor4( 1.0f, 0.0f, 0.0f, 1.0f ) ) );
-            resCache.Add( "GreenBrush", t => new SolidColorBrush( t, new RawColor4( 0.0f, 1.0f, 0.0f, 1.0f ) ) );
-            resCache.Add( "BlueBrush" , t => new SolidColorBrush( t, new RawColor4( 0.0f, 0.0f, 1.0f, 1.0f ) ) );
+        public SampleControl()
+        {
+            ResourceCache.Add("RedBrush", t => new SolidColorBrush(t, new RawColor4(1.0f, 0.0f, 0.0f, 1.0f)));
+            ResourceCache.Add("GreenBrush", t => new SolidColorBrush(t, new RawColor4(0.0f, 1.0f, 0.0f, 1.0f)));
+            ResourceCache.Add("BlueBrush", t => new SolidColorBrush(t, new RawColor4(0.0f, 0.0f, 1.0f, 1.0f)));
         }
 
-        public override void Render( RenderTarget target ) {
-            target.Clear( new RawColor4( 1.0f, 1.0f, 1.0f, 1.0f ) );
-            Brush brush = null;
-            switch( rnd.Next( 3 ) ) {
-                case 0: brush = resCache["RedBrush"  ] as Brush; break;
-                case 1: brush = resCache["GreenBrush"] as Brush; break;
-                case 2: brush = resCache["BlueBrush" ] as Brush; break;
-            }
-            target.DrawRectangle( new RawRectangleF( x, y, x + w, y + h ), brush );
+        public override void Render(RenderTarget target)
+        {
+            target.Clear(new RawColor4(1.0f, 1.0f, 1.0f, 1.0f));
+            var brush = _rnd.Next(3) switch
+            {
+                0 => ResourceCache["RedBrush"] as Brush,
+                1 => ResourceCache["GreenBrush"] as Brush,
+                2 => ResourceCache["BlueBrush"] as Brush,
+                _ => null
+            };
 
-            x = x + dx;
-            y = y + dy;
-            if ( x >= ActualWidth - w || x <= 0 ) {
-                dx = -dx;
+            target.DrawRectangle(new RawRectangleF(_x, _y, _x + W, _y + H), brush);
+
+            _x += _dx;
+            _y += _dy;
+            if (_x >= ActualWidth - W || _x <= 0)
+            {
+                _dx = -_dx;
             }
-            if ( y >= ActualHeight - h || y <= 0 ) {
-                dy = -dy;
+
+            if (_y >= ActualHeight - H || _y <= 0)
+            {
+                _dy = -_dy;
             }
         }
     }
