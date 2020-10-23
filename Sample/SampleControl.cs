@@ -25,19 +25,13 @@ namespace Sample
         public override void Render(RenderTarget target)
         {
             target.Clear(new RawColor4(1.0f, 1.0f, 1.0f, 1.0f));
-            Brush? brush = null;
-            switch (_rnd.Next(3))
+            var brush = _rnd.Next(3) switch
             {
-                case 0:
-                    brush = ResourceCache["RedBrush"] as Brush;
-                    break;
-                case 1:
-                    brush = ResourceCache["GreenBrush"] as Brush;
-                    break;
-                case 2:
-                    brush = ResourceCache["BlueBrush"] as Brush;
-                    break;
-            }
+                0 => ResourceCache["RedBrush"] as Brush,
+                1 => ResourceCache["GreenBrush"] as Brush,
+                2 => ResourceCache["BlueBrush"] as Brush,
+                _ => null
+            };
 
             target.DrawRectangle(new RawRectangleF(_x, _y, _x + W, _y + H), brush);
 

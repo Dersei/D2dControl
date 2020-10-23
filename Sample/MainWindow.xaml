@@ -5,9 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Sample"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
+        Title="Sample" Height="350" Width="525">
     <Grid>
-        <local:SampleControl x:Name="sampleControl" />
-        <Label x:Name="label" Content="{Binding ElementName=sampleControl,Path=Fps}" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
+        <local:SampleControl x:Name="SampleControl" />
+        <Label Content="{Binding ElementName=SampleControl, Path=Fps}" HorizontalAlignment="Left" Margin="10,10,0,0"
+               VerticalAlignment="Top" />
     </Grid>
 </Window>
