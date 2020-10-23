@@ -1,14 +1,11 @@
 # D2dControl
 
-[![Build status](https://ci.appveyor.com/api/projects/status/ey3x8chjrxwa967s?svg=true)](https://ci.appveyor.com/project/dalance/d2dcontrol)
+[![Build status](https://ci.appveyor.com/api/projects/status/ey3x8chjrxwa967s?svg=true)](https://ci.appveyor.com/project/dersei/d2dcontrol)
 
 **D2dControl** is a WPF Control for Direct2D with SharpDX.
 
-## Install
-Download from [nuget](https://www.nuget.org/packages/D2dControl/)
-
 ## Dependencies
-- SharpDX ( >= 3.0.0 )
+- SharpDX ( >= 4.2.0 )
 
 ## Usage
 Create a class derived from `D2dControl.D2dControl`, and override `Render` method.
