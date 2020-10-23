@@ -3,146 +3,164 @@ using System;
 using System.Threading;
 using System.Windows.Interop;
 
-namespace D2dControl {
-    class Dx11ImageSource : D3DImage, IDisposable {
+namespace D2dControl
+{
+    internal class Dx11ImageSource : D3DImage, IDisposable
+    {
+        private static int _activeClients;
+        private static Direct3DEx _d3DContext = null!;
+        private static DeviceEx _d3DDevice = null!;
 
-        // - field -----------------------------------------------------------------------
-
-        private static int        ActiveClients;
-        private static Direct3DEx D3DContext;
-        private static DeviceEx   D3DDevice;
-
-        private Texture renderTarget;
-
-        // - property --------------------------------------------------------------------
+        private Texture? _renderTarget;
 
         public int RenderWait { get; set; } = 2; // default: 2ms
 
-        // - public methods --------------------------------------------------------------
-
-        public Dx11ImageSource() {
+        public Dx11ImageSource()
+        {
             StartD3D();
-            Dx11ImageSource.ActiveClients++;
+            _activeClients++;
         }
 
-        public void Dispose() {
-            SetRenderTarget( null );
+        public void Dispose()
+        {
+            SetRenderTarget(null);
+            _renderTarget?.Dispose();
 
-            Disposer.SafeDispose( ref renderTarget );
-
-            Dx11ImageSource.ActiveClients--;
+            _activeClients--;
             EndD3D();
         }
 
-        public void InvalidateD3DImage() {
-            if( renderTarget != null ) {
-                base.Lock();
-                if( RenderWait != 0 ) {
-                    Thread.Sleep( RenderWait );
+        public void InvalidateD3DImage()
+        {
+            if (_renderTarget != null)
+            {
+                Lock();
+                if (RenderWait != 0)
+                {
+                    Thread.Sleep(RenderWait);
                 }
-                base.AddDirtyRect( new System.Windows.Int32Rect( 0, 0, base.PixelWidth, base.PixelHeight ) );
-                base.Unlock();
+
+                AddDirtyRect(new System.Windows.Int32Rect(0, 0, PixelWidth, PixelHeight));
+                Unlock();
             }
         }
 
-        public void SetRenderTarget( SharpDX.Direct3D11.Texture2D target ) {
-            if( renderTarget != null ) {
-                renderTarget = null;
+        public void SetRenderTarget(SharpDX.Direct3D11.Texture2D? target)
+        {
+            if (_renderTarget != null)
+            {
+                _renderTarget = null;
 
-                base.Lock();
-                base.SetBackBuffer( D3DResourceType.IDirect3DSurface9, IntPtr.Zero );
-                base.Unlock();
+                Lock();
+                SetBackBuffer(D3DResourceType.IDirect3DSurface9, IntPtr.Zero);
+                Unlock();
             }
 
-            if( target == null ) {
+            if (target == null)
+            {
                 return;
             }
 
-            var format = Dx11ImageSource.TranslateFormat( target );
-            var handle = GetSharedHandle( target );
+            var format = TranslateFormat(target);
+            var handle = GetSharedHandle(target);
 
-            if ( !IsShareable( target ) ) {
-                throw new ArgumentException( "Texture must be created with ResouceOptionFlags.Shared" );
+            if (!IsShareable(target))
+            {
+                throw new ArgumentException("Texture must be created with ResourceOptionFlags.Shared");
             }
 
-            if ( format == Format.Unknown ) {
-                throw new ArgumentException( "Texture format is not compatible with OpenSharedResouce" );
+            if (format == Format.Unknown)
+            {
+                throw new ArgumentException("Texture format is not compatible with OpenSharedResource");
             }
 
-            if ( handle == IntPtr.Zero ) {
-                throw new ArgumentException( "Invalid handle" );
+            if (handle == IntPtr.Zero)
+            {
+                throw new ArgumentException("Invalid handle");
             }
 
-            renderTarget = new Texture( Dx11ImageSource.D3DDevice, target.Description.Width, target.Description.Height, 1, Usage.RenderTarget, format, Pool.Default, ref handle );
+            _renderTarget = new Texture(_d3DDevice, target.Description.Width, target.Description.Height,
+                1, Usage.RenderTarget, format, Pool.Default, ref handle);
 
-            using( var surface = renderTarget.GetSurfaceLevel( 0 ) ) {
-                base.Lock();
-                base.SetBackBuffer( D3DResourceType.IDirect3DSurface9, surface.NativePointer );
-                base.Unlock();
-            }
+            using var surface = _renderTarget.GetSurfaceLevel(0);
+            Lock();
+            SetBackBuffer(D3DResourceType.IDirect3DSurface9, surface.NativePointer);
+            Unlock();
         }
 
-        // - private methods -------------------------------------------------------------
-
-        private void StartD3D() {
-            if( Dx11ImageSource.ActiveClients != 0 ) {
-                return;
-            }
-
-            var presentParams = GetPresentParameters();
-            var createFlags    = CreateFlags.HardwareVertexProcessing | CreateFlags.Multithreaded | CreateFlags.FpuPreserve;
-
-            Dx11ImageSource.D3DContext = new Direct3DEx();
-            Dx11ImageSource.D3DDevice  = new DeviceEx( D3DContext, 0, DeviceType.Hardware, IntPtr.Zero, createFlags, presentParams );
-        }
-
-        private void EndD3D() {
-            if( Dx11ImageSource.ActiveClients != 0 ) {
-                return;
-            }
-
-            Disposer.SafeDispose( ref renderTarget );
-            Disposer.SafeDispose( ref Dx11ImageSource.D3DDevice );
-            Disposer.SafeDispose( ref Dx11ImageSource.D3DContext );
-        }
-
-        private static void ResetD3D() {
-            if( Dx11ImageSource.ActiveClients == 0 ) {
+        private static void StartD3D()
+        {
+            if (_activeClients != 0)
+            {
                 return;
             }
 
             var presentParams = GetPresentParameters();
-            Dx11ImageSource.D3DDevice.ResetEx( ref presentParams );
+            const CreateFlags createFlags = CreateFlags.HardwareVertexProcessing | CreateFlags.Multithreaded |
+                                            CreateFlags.FpuPreserve;
+
+            _d3DContext = new Direct3DEx();
+            _d3DDevice =
+                new DeviceEx(_d3DContext, 0, DeviceType.Hardware, IntPtr.Zero, createFlags, presentParams);
         }
 
-        private static PresentParameters GetPresentParameters() {
-            var presentParams = new PresentParameters();
+        private void EndD3D()
+        {
+            if (_activeClients != 0)
+            {
+                return;
+            }
 
-            presentParams.Windowed             = true;
-            presentParams.SwapEffect           = SwapEffect.Discard;
-            presentParams.DeviceWindowHandle   = NativeMethods.GetDesktopWindow();
-            presentParams.PresentationInterval = PresentInterval.Default;
+            _renderTarget?.Dispose();
+            _d3DDevice.Dispose();
+            _d3DContext.Dispose();
+        }
+
+        private static void ResetD3D()
+        {
+            if (_activeClients == 0)
+            {
+                return;
+            }
+
+            var presentParams = GetPresentParameters();
+            _d3DDevice.ResetEx(ref presentParams);
+        }
+
+        private static PresentParameters GetPresentParameters()
+        {
+            var presentParams = new PresentParameters
+            {
+                Windowed = true,
+                SwapEffect = SwapEffect.Discard,
+                DeviceWindowHandle = NativeMethods.GetDesktopWindow(),
+                PresentationInterval = PresentInterval.Default
+            };
+
 
             return presentParams;
         }
 
-        private IntPtr GetSharedHandle( SharpDX.Direct3D11.Texture2D texture ) {
-            using ( var resource = texture.QueryInterface<SharpDX.DXGI.Resource>() ) {
-                return resource.SharedHandle;
-            }
+        private static IntPtr GetSharedHandle(SharpDX.Direct3D11.Texture2D texture)
+        {
+            using var resource = texture.QueryInterface<SharpDX.DXGI.Resource>();
+            return resource.SharedHandle;
         }
 
-        private static Format TranslateFormat( SharpDX.Direct3D11.Texture2D texture ) {
-            switch( texture.Description.Format ) {
-                case SharpDX.DXGI.Format.R10G10B10A2_UNorm : return SharpDX.Direct3D9.Format.A2B10G10R10;
-                case SharpDX.DXGI.Format.R16G16B16A16_Float: return SharpDX.Direct3D9.Format.A16B16G16R16F;
-                case SharpDX.DXGI.Format.B8G8R8A8_UNorm    : return SharpDX.Direct3D9.Format.A8R8G8B8;
-                default                                    : return SharpDX.Direct3D9.Format.Unknown;
-            }
+        private static Format TranslateFormat(SharpDX.Direct3D11.Texture2D texture)
+        {
+            return texture.Description.Format switch
+            {
+                SharpDX.DXGI.Format.R10G10B10A2_UNorm => Format.A2B10G10R10,
+                SharpDX.DXGI.Format.R16G16B16A16_Float => Format.A16B16G16R16F,
+                SharpDX.DXGI.Format.B8G8R8A8_UNorm => Format.A8R8G8B8,
+                _ => Format.Unknown
+            };
         }
 
-        private static bool IsShareable( SharpDX.Direct3D11.Texture2D texture ) {
-            return ( texture.Description.OptionFlags & SharpDX.Direct3D11.ResourceOptionFlags.Shared ) != 0;
+        private static bool IsShareable(SharpDX.Direct3D11.Texture2D texture)
+        {
+            return (texture.Description.OptionFlags & SharpDX.Direct3D11.ResourceOptionFlags.Shared) != 0;
         }
     }
 }

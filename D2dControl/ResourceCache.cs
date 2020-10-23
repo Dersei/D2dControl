@@ -2,111 +2,131 @@
 using System;
 using System.Collections.Generic;
 
-namespace D2dControl {
-    public class ResourceCache {
-        // - field -----------------------------------------------------------------------
+namespace D2dControl
+{
+    public class ResourceCache
+    {
+        private readonly Dictionary<string, Func<RenderTarget, object>> _generators =
+            new Dictionary<string, Func<RenderTarget, object>>();
 
-        private Dictionary<string, Func<RenderTarget, object>> generators = new Dictionary<string, Func<RenderTarget, object>>();
-        private Dictionary<string, object> resources = new Dictionary<string, object>();
-        private RenderTarget renderTarget = null;
-            
-        // - property --------------------------------------------------------------------
-            
-        public RenderTarget RenderTarget {
-            get { return renderTarget; }
-            set { renderTarget = value;  UpdateResources(); }
-        }
+        private readonly Dictionary<string, object?> _resources = new Dictionary<string, object?>();
+        private RenderTarget? _renderTarget;
 
-        public int Count {
-            get { return resources.Count; }
-        }
-
-        public object this[string key] {
-            get { return resources[key]; }
-        }
-
-        public Dictionary<string, object>.KeyCollection Keys {
-            get { return resources.Keys; }
-        }
-
-        public Dictionary<string, object>.ValueCollection Values {
-            get { return resources.Values; }
-        }
-
-        // - public methods --------------------------------------------------------------
-
-        public void Add( string key, Func<RenderTarget, object> gen ) {
-            object resOld;
-            if ( resources.TryGetValue( key, out resOld ) ) {
-                Disposer.SafeDispose( ref resOld );
-                generators.Remove( key );
-                resources.Remove( key );
-            }
-
-            if ( renderTarget == null ) {
-                generators.Add( key, gen );
-            	resources.Add( key, null );
-            } else {
-                var res = gen( renderTarget );
-                generators.Add( key, gen );
-                resources.Add( key, res );
+        public RenderTarget? RenderTarget
+        {
+            get => _renderTarget;
+            set
+            {
+                _renderTarget = value;
+                UpdateResources();
             }
         }
 
-        public void Clear() {
-            foreach ( var key in resources.Keys ) {
-                var res = resources[key];
-                Disposer.SafeDispose( ref res );
+        public int Count => _resources.Count;
+
+        public object? this[string key] => _resources[key];
+
+        public Dictionary<string, object?>.KeyCollection Keys => _resources.Keys;
+
+        public Dictionary<string, object?>.ValueCollection Values => _resources.Values;
+
+        public void Add(string key, Func<RenderTarget, object> gen)
+        {
+            if (_resources.TryGetValue(key, out var resOld))
+            {
+                if (resOld is IDisposable disposable)
+                {
+                    disposable.Dispose();
+                }
+                _generators.Remove(key);
+                _resources.Remove(key);
             }
-            generators.Clear();
-            resources.Clear();
+
+            if (_renderTarget == null)
+            {
+                _generators.Add(key, gen);
+                _resources.Add(key, null);
+            }
+            else
+            {
+                var res = gen(_renderTarget);
+                _generators.Add(key, gen);
+                _resources.Add(key, res);
+            }
         }
 
-        public bool ContainsKey( string key ) {
-            return resources.ContainsKey( key );
+        public void Clear()
+        {
+            foreach (var key in _resources.Keys)
+            {
+                var res = _resources[key];
+                if (res is IDisposable disposable)
+                {
+                    disposable.Dispose();
+                }
+            }
+
+            _generators.Clear();
+            _resources.Clear();
         }
 
-        public bool ContainsValue( object val ) {
-            return resources.ContainsValue( val );
+        public bool ContainsKey(string key)
+        {
+            return _resources.ContainsKey(key);
         }
 
-        public Dictionary<string, object>.Enumerator GetEnumerator() {
-            return resources.GetEnumerator();
+        public bool ContainsValue(object val)
+        {
+            return _resources.ContainsValue(val);
         }
 
-        public bool Remove( string key ) {
-            object res;
-            if ( resources.TryGetValue( key, out res ) ) {
-                Disposer.SafeDispose( ref res );
-                generators.Remove( key );
-                resources.Remove( key );
+        public Dictionary<string, object?>.Enumerator GetEnumerator()
+        {
+            return _resources.GetEnumerator();
+        }
+
+        public bool Remove(string key)
+        {
+            if (_resources.TryGetValue(key, out var res))
+            {
+                if(res is IDisposable disposable)
+                {
+                    disposable.Dispose();
+                }
+                _generators.Remove(key);
+                _resources.Remove(key);
                 return true;
-            } else {
-                return false;
             }
+
+            return false;
         }
 
-        public bool TryGetValue( string key, out object res ) {
-            return resources.TryGetValue( key, out res );
+        public bool TryGetValue(string key, out object? res)
+        {
+            return _resources.TryGetValue(key, out res);
         }
 
-        // - private methods -------------------------------------------------------------
-
-        private void UpdateResources() {
-            if ( renderTarget == null ) { return; }
-
-            foreach( var g in generators ) {
+        private void UpdateResources()
+        {
+            foreach (var g in _generators)
+            {
                 var key = g.Key;
                 var gen = g.Value;
-                var res = gen( renderTarget );
+                if (_renderTarget != null)
+                {
+                    var res = gen(_renderTarget);
 
-                object resOld;
-            	if ( resources.TryGetValue( key, out resOld ) ) {
-            	    Disposer.SafeDispose( ref resOld );
-                    resources.Remove( key );
+                    if (_resources.TryGetValue(key, out var resOld))
+                    {
+                        if(resOld is IDisposable disposable)
+                        {
+                            disposable.Dispose();
+                        }
+                        _resources.Remove(key);
+                    }
+
+                    _resources.Add(key, res);
                 }
-
-                resources.Add( key, res );
             }
         }
     }
