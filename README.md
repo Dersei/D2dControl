@@ -8,4 +8,4 @@
 ## Usage
 Create a class derived from `D2dControl.D2dControl`, and override `Render` method.
 In `Render` method, you can use `SharpDX.Direct2D1.RenderTarget` for calling Direct2D functions.
-See [sample project](https://github.com/dalance/D2dControl/tree/master/Sample) for details.
+See [sample project](https://github.com/Dersei/D2dControl/tree/master/Sample) for details.
