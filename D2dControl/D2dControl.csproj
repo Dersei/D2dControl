@@ -14,6 +14,9 @@
         <PackageTags>Direct2D WPF</PackageTags>
         <Description>Direct2d control for WPF.</Description>
         <Copyright>Dersei</Copyright>
+        <AssemblyVersion>1.0.1.0</AssemblyVersion>
+        <FileVersion>1.0.1.0</FileVersion>
+        <Version>1.0.1</Version>
     </PropertyGroup>
 
     <ItemGroup>
