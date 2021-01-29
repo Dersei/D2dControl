@@ -6,10 +6,9 @@ namespace D2dControl
 {
     public class ResourceCache
     {
-        private readonly Dictionary<string, Func<RenderTarget, object>> _generators =
-            new Dictionary<string, Func<RenderTarget, object>>();
+        private readonly Dictionary<string, Func<RenderTarget, object>> _generators = new();
 
-        private readonly Dictionary<string, object?> _resources = new Dictionary<string, object?>();
+        private readonly Dictionary<string, object?> _resources = new();
         private RenderTarget? _renderTarget;
 
         public RenderTarget? RenderTarget
@@ -38,6 +37,7 @@ namespace D2dControl
                 {
                     disposable.Dispose();
                 }
+
                 _generators.Remove(key);
                 _resources.Remove(key);
             }
@@ -89,10 +89,11 @@ namespace D2dControl
         {
             if (_resources.TryGetValue(key, out var res))
             {
-                if(res is IDisposable disposable)
+                if (res is IDisposable disposable)
                 {
                     disposable.Dispose();
                 }
+
                 _generators.Remove(key);
                 _resources.Remove(key);
                 return true;
@@ -118,10 +119,11 @@ namespace D2dControl
 
                     if (_resources.TryGetValue(key, out var resOld))
                     {
-                        if(resOld is IDisposable disposable)
+                        if (resOld is IDisposable disposable)
                         {
                             disposable.Dispose();
                         }
+
                         _resources.Remove(key);
                     }
 

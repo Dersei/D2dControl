@@ -2,8 +2,8 @@
 using System.Runtime.InteropServices;
 
 namespace D2dControl {
-    public static class NativeMethods {
+    internal static class NativeMethods {
         [DllImport( "user32.dll", SetLastError = false )]
-        public static extern IntPtr GetDesktopWindow();
+        internal static extern IntPtr GetDesktopWindow();
     }
 }

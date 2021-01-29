@@ -18,15 +18,15 @@ namespace D2dControl
         private RenderTarget? _d2DRenderTarget;
         private SharpDX.Direct2D1.Factory? _d2DFactory;
 
-        private readonly Stopwatch _renderTimer = new Stopwatch();
+        private readonly Stopwatch _renderTimer = new();
 
-        protected readonly ResourceCache ResourceCache = new ResourceCache();
+        protected readonly ResourceCache ResourceCache = new();
 
         private long _lastFrameTime;
         private long _lastRenderTime;
         private int _frameCount;
         private int _frameCountHistTotal;
-        private readonly Queue<int> _frameCountHist = new Queue<int>();
+        private readonly Queue<int> _frameCountHist = new();
 
         public static bool IsInDesignMode
         {
@@ -99,7 +99,7 @@ namespace D2dControl
             EndD3D();
         }
 
-        private void OnRendering(object sender, EventArgs e)
+        private void OnRendering(object? sender, EventArgs e)
         {
             if (!_renderTimer.IsRunning)
             {
