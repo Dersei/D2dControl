@@ -5,6 +5,15 @@
         <UseWPF>true</UseWPF>
         <Nullable>enable</Nullable>
         <LangVersion>default</LangVersion>
+        <PackageId>Dersei.D2dControl</PackageId>
+        <Authors>Dersei</Authors>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageProjectUrl>https://github.com/Dersei/D2dControl</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/Dersei/D2dControl</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageTags>Direct2D WPF</PackageTags>
+        <Description>Direct2d control for WPF.</Description>
+        <Copyright>Dersei</Copyright>
     </PropertyGroup>
 
     <ItemGroup>
