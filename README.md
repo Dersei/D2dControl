@@ -1,6 +1,6 @@
 # D2dControl
 
-**D2dControl** is a WPF Control for Direct2D with SharpDX. This repository contains code created by dalance and updated to work with .NET Core 3.1.
+**D2dControl** is a WPF Control for Direct2D with SharpDX. This repository contains code created by dalance and updated to work with .NET 6.0.
 
 ## Dependencies
 - SharpDX ( >= 4.2.0 )

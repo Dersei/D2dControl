@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net5.0-windows</TargetFramework>
+        <TargetFramework>net6.0-windows</TargetFramework>
         <UseWPF>true</UseWPF>
         <Nullable>enable</Nullable>
         <LangVersion>default</LangVersion>
@@ -12,12 +12,20 @@
         <RepositoryUrl>https://github.com/Dersei/D2dControl</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PackageTags>Direct2D WPF</PackageTags>
-        <Description>Direct2d control for WPF.</Description>
+        <Description>Direct2D control for WPF.</Description>
         <Copyright>Dersei</Copyright>
-        <AssemblyVersion>1.0.1.0</AssemblyVersion>
-        <FileVersion>1.0.1.0</FileVersion>
-        <Version>1.0.1</Version>
+        <AssemblyVersion>1.0.2.0</AssemblyVersion>
+        <FileVersion>1.0.2.0</FileVersion>
+        <Version>1.0.2</Version>
     </PropertyGroup>
+
+    <PropertyGroup>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="..\README.md" Pack="true" PackagePath="\"/>
+    </ItemGroup>
 
     <ItemGroup>
       <PackageReference Include="SharpDX" Version="4.2.0" />
